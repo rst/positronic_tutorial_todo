@@ -17,7 +17,8 @@ import org.positronicnet.orm.ManagedRecord
 import org.positronicnet.orm.Actions._
 import org.positronicnet.notifications.Actions._
 
-import org.positronicnet.ui.IndexedSeqAdapter
+import org.positronicnet.ui.PositronicActivity
+import org.positronicnet.ui.IndexedSeqSourceAdapter
 
 object TodoDb extends Database( filename = "todos.sqlite3" ) 
 {
@@ -40,54 +41,30 @@ case class TodoItem( description: String = null,
 
 object TodoItems extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
 
-class TodoItemsActivity extends Activity {
+class TodoItemsActivity 
+  extends PositronicActivity( layoutResourceId = R.layout.todo_items )
+{
+  def findView[T]( tr: TypedResource[T] )=findViewById( tr.id ).asInstanceOf[T]
 
-  lazy val adapter: IndexedSeqAdapter[ TodoItem ] = 
-    new IndexedSeqAdapter(
-      IndexedSeq.empty,
+  lazy val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
+    new IndexedSeqSourceAdapter(
+      this, TodoItems.records,
       itemViewResourceId = android.R.layout.simple_list_item_1 )
   
-  override def onCreate(savedInstanceState: Bundle) {
+  onCreate {
+    useAppFacility( TodoDb )
+    findView( TR.listItemsView ).setAdapter( adapter )
 
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.todo_items)
-
-    TodoDb.openInContext( this )
-
-    val listView = findViewById( R.id.listItemsView ).asInstanceOf[ ListView ]
-    val button   = findViewById( R.id.addButton ).asInstanceOf[ Button ]
-
-    listView.setAdapter( adapter )
-
-    TodoItems ! Fetch{ adapter.resetSeq( _ ) }
-
-    button.setOnClickListener{
-      new OnClickListener {
-        override def onClick(v: View) = {
-          val textView = findViewById( R.id.newItemText ).asInstanceOf[TextView]
-          val text = textView.getText.toString.trim
-          if (text != "") {
-            TodoItems ! Save( new TodoItem( text ))
-            TodoItems ! Fetch{ adapter.resetSeq( _ ) }
-          }
-          textView.setText( "" )
-        }
+    findView( TR.addButton ).onClick {
+      val text = findView( TR.newItemText ).getText.toString.trim
+      if (text != "") {
+        TodoItems ! Save( new TodoItem( text ))
+        findView( TR.newItemText ).setText( "" )
       }
     }
 
-    listView.setOnItemClickListener {
-      new OnItemClickListener {
-        override def onItemClick( parent: AdapterView[_], view: View, 
-                                  posn: Int, id: Long ) = {
-          TodoItems ! Delete( adapter.getItem( posn ) )
-          TodoItems ! Fetch{ adapter.resetSeq( _ ) }
-        }
-      }
+    findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
+      TodoItems ! Delete( adapter.getItem( posn ))
     }
-  }
-
-  override def onDestroy = {
-    super.onDestroy
-    TodoDb.close
   }
 }
