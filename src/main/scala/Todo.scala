@@ -42,11 +42,6 @@ object TodoItems extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
 
 class TodoItemsActivity extends Activity {
 
-  lazy val adapter: IndexedSeqAdapter[ TodoItem ] = 
-    new IndexedSeqAdapter(
-      IndexedSeq.empty,
-      itemViewResourceId = android.R.layout.simple_list_item_1 )
-  
   override def onCreate(savedInstanceState: Bundle) {
 
     super.onCreate(savedInstanceState)
@@ -54,13 +49,28 @@ class TodoItemsActivity extends Activity {
 
     TodoDb.openInContext( this )
 
+    val adapter: IndexedSeqAdapter[ TodoItem ] = 
+      new IndexedSeqAdapter(
+        IndexedSeq.empty,
+        itemViewResourceId = android.R.layout.simple_list_item_1 )
+  
     val listView = findViewById( R.id.listItemsView ).asInstanceOf[ ListView ]
-    val button   = findViewById( R.id.addButton ).asInstanceOf[ Button ]
 
     listView.setAdapter( adapter )
 
     TodoItems ! Fetch{ adapter.resetSeq( _ ) }
 
+    listView.setOnItemClickListener {
+      new OnItemClickListener {
+        override def onItemClick( parent: AdapterView[_], view: View, 
+                                  posn: Int, id: Long ) = {
+          TodoItems ! Delete( adapter.getItem( posn ) )
+          TodoItems ! Fetch{ adapter.resetSeq( _ ) }
+        }
+      }
+    }
+
+    val button   = findViewById( R.id.addButton ).asInstanceOf[ Button ]
     button.setOnClickListener{
       new OnClickListener {
         override def onClick(v: View) = {
@@ -71,16 +81,6 @@ class TodoItemsActivity extends Activity {
             TodoItems ! Fetch{ adapter.resetSeq( _ ) }
           }
           textView.setText( "" )
-        }
-      }
-    }
-
-    listView.setOnItemClickListener {
-      new OnItemClickListener {
-        override def onItemClick( parent: AdapterView[_], view: View, 
-                                  posn: Int, id: Long ) = {
-          TodoItems ! Delete( adapter.getItem( posn ) )
-          TodoItems ! Fetch{ adapter.resetSeq( _ ) }
         }
       }
     }
