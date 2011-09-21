@@ -33,13 +33,13 @@ object TodoDb extends Database( filename = "todos.sqlite3" )
 case class TodoItem( description: String = null, 
                      id: Long            = ManagedRecord.unsavedId 
                    )
-  extends ManagedRecord( TodoItems )
+  extends ManagedRecord( TodoItem )
 {
   def setDescription( s: String ) = this.copy( description = s )
   override def toString = this.description
 }
 
-object TodoItems extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
+object TodoItem extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
 
 class TodoItemsActivity 
   extends Activity with PositronicActivityHelpers with ViewHolder
@@ -50,19 +50,19 @@ class TodoItemsActivity
 
     val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
       new IndexedSeqSourceAdapter(
-        this, TodoItems.records,
+        this, TodoItem.records,
         itemViewResourceId = android.R.layout.simple_list_item_1 )
   
     findView( TR.listItemsView ).setAdapter( adapter )
 
     findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
-      TodoItems ! Delete( adapter.getItem( posn ))
+      TodoItem ! Delete( adapter.getItem( posn ))
     }
 
     findView( TR.addButton ).onClick {
       val text = findView( TR.newItemText ).getText.toString.trim
       if (text != "") {
-        TodoItems ! Save( new TodoItem( text ))
+        TodoItem ! Save( new TodoItem( text ))
         findView( TR.newItemText ).setText( "" )
       }
     }
