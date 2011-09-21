@@ -17,7 +17,7 @@ import org.positronicnet.orm.ManagedRecord
 import org.positronicnet.orm.Actions._
 import org.positronicnet.notifications.Actions._
 
-import org.positronicnet.ui.PositronicActivity
+import org.positronicnet.ui.PositronicActivityHelpers
 import org.positronicnet.ui.IndexedSeqSourceAdapter
 
 object TodoDb extends Database( filename = "todos.sqlite3" ) 
@@ -42,18 +42,22 @@ case class TodoItem( description: String = null,
 object TodoItems extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
 
 class TodoItemsActivity 
-  extends PositronicActivity( layoutResourceId = R.layout.todo_items )
+  extends Activity with PositronicActivityHelpers with ViewHolder
 {
-  def findView[T]( tr: TypedResource[T] )=findViewById( tr.id ).asInstanceOf[T]
-
-  lazy val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
-    new IndexedSeqSourceAdapter(
-      this, TodoItems.records,
-      itemViewResourceId = android.R.layout.simple_list_item_1 )
-  
   onCreate {
+    setContentView( R.layout.todo_items )
     useAppFacility( TodoDb )
+
+    val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
+      new IndexedSeqSourceAdapter(
+        this, TodoItems.records,
+        itemViewResourceId = android.R.layout.simple_list_item_1 )
+  
     findView( TR.listItemsView ).setAdapter( adapter )
+
+    findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
+      TodoItems ! Delete( adapter.getItem( posn ))
+    }
 
     findView( TR.addButton ).onClick {
       val text = findView( TR.newItemText ).getText.toString.trim
@@ -62,9 +66,10 @@ class TodoItemsActivity
         findView( TR.newItemText ).setText( "" )
       }
     }
-
-    findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
-      TodoItems ! Delete( adapter.getItem( posn ))
-    }
   }
+}
+
+trait ViewHolder {
+  def findViewById( id: Int ): View
+  def findView[T]( t: TypedResource[T] ) = findViewById( t.id ).asInstanceOf[T]
 }
