@@ -50,7 +50,7 @@ class TodoItemsActivity
 
     val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
       new IndexedSeqSourceAdapter(
-        this, TodoItem.records,
+        this, TodoItem,
         itemViewResourceId = android.R.layout.simple_list_item_1 )
   
     findView( TR.listItemsView ).setAdapter( adapter )
