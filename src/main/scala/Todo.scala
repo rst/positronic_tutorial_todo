@@ -5,6 +5,8 @@ import android.os.Bundle
 
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.View.OnKeyListener
+import android.view.KeyEvent
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
@@ -55,6 +57,8 @@ class TodoItemsActivity extends Activity {
         itemViewResourceId = android.R.layout.simple_list_item_1 )
   
     val listView = findViewById( R.id.listItemsView ).asInstanceOf[ ListView ]
+    val textView = findViewById( R.id.newItemText ).asInstanceOf[TextView]
+    val button   = findViewById( R.id.addButton ).asInstanceOf[ Button ]
 
     listView.setAdapter( adapter )
 
@@ -70,19 +74,33 @@ class TodoItemsActivity extends Activity {
       }
     }
 
-    val button   = findViewById( R.id.addButton ).asInstanceOf[ Button ]
     button.setOnClickListener{
       new OnClickListener {
-        override def onClick(v: View) = {
-          val textView = findViewById( R.id.newItemText ).asInstanceOf[TextView]
-          val text = textView.getText.toString.trim
-          if (text != "") {
-            TodoItems ! Save( new TodoItem( text ))
-            TodoItems ! Fetch{ adapter.resetSeq( _ ) }
-          }
-          textView.setText( "" )
-        }
+        override def onClick(v: View) = { addItem }
       }
+    }
+
+    textView.setOnKeyListener{
+      new OnKeyListener {
+        def onKey( v: View, keyCode: Int, ev: KeyEvent ): Boolean = { 
+          if (keyCode == KeyEvent.KEYCODE_ENTER
+              && ev.getAction == KeyEvent.ACTION_DOWN) 
+          {
+            addItem
+            return true
+          }
+          return false
+        } 
+      }
+    }
+
+    def addItem = {
+      val text = textView.getText.toString.trim
+      if (text != "") {
+        TodoItems ! Save( new TodoItem( text ))
+        TodoItems ! Fetch{ adapter.resetSeq( _ ) }
+      }
+      textView.setText( "" )
     }
   }
 
