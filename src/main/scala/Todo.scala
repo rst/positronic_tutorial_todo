@@ -75,6 +75,7 @@ class TodoItemsActivity
   onCreate {
     setContentView( R.layout.todo_items )
     useAppFacility( TodoDb )
+    useOptionsMenuResource( R.menu.todo_items_menu )
 
     val adapter = new TodoItemsAdapter( this )
     findView( TR.listItemsView ).setAdapter( adapter )
@@ -84,6 +85,10 @@ class TodoItemsActivity
     }
     findView( TR.addButton ).onClick { addItem }
     findView( TR.newItemText ).onKey( KeyEvent.KEYCODE_ENTER ){ addItem }
+
+    onOptionsItemSelected( R.id.delete_where_done ) { 
+      TodoItem.whereEq( "is_done" -> true ) ! DeleteAll
+    }
 
     def addItem = {
       val text = findView( TR.newItemText ).getText.toString.trim
