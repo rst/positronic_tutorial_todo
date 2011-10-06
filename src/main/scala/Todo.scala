@@ -5,6 +5,7 @@ import android.os.Bundle
 
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.KeyEvent
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
@@ -17,7 +18,7 @@ import org.positronicnet.orm.ManagedRecord
 import org.positronicnet.orm.Actions._
 import org.positronicnet.notifications.Actions._
 
-import org.positronicnet.ui.PositronicActivity
+import org.positronicnet.ui.PositronicActivityHelpers
 import org.positronicnet.ui.IndexedSeqSourceAdapter
 
 object TodoDb extends Database( filename = "todos.sqlite3" ) 
@@ -33,38 +34,46 @@ object TodoDb extends Database( filename = "todos.sqlite3" )
 case class TodoItem( description: String = null, 
                      id: Long            = ManagedRecord.unsavedId 
                    )
-  extends ManagedRecord( TodoItems )
+  extends ManagedRecord( TodoItem )
 {
   def setDescription( s: String ) = this.copy( description = s )
   override def toString = this.description
 }
 
-object TodoItems extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
+object TodoItem extends RecordManager[ TodoItem ]( TodoDb( "todo_items" ))
 
 class TodoItemsActivity 
-  extends PositronicActivity( layoutResourceId = R.layout.todo_items )
+  extends Activity with PositronicActivityHelpers with ViewHolder
 {
-  def findView[T]( tr: TypedResource[T] )=findViewById( tr.id ).asInstanceOf[T]
-
-  lazy val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
-    new IndexedSeqSourceAdapter(
-      this, TodoItems.records,
-      itemViewResourceId = android.R.layout.simple_list_item_1 )
-  
   onCreate {
+    setContentView( R.layout.todo_items )
     useAppFacility( TodoDb )
+
+    val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
+      new IndexedSeqSourceAdapter(
+        this, TodoItem,
+        itemViewResourceId = android.R.layout.simple_list_item_1 )
+  
     findView( TR.listItemsView ).setAdapter( adapter )
 
-    findView( TR.addButton ).onClick {
+    findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
+      TodoItem ! Delete( adapter.getItem( posn ))
+    }
+
+    findView( TR.addButton ).onClick { addItem }
+    findView( TR.newItemText ).onKey( KeyEvent.KEYCODE_ENTER ){ addItem }
+
+    def addItem = {
       val text = findView( TR.newItemText ).getText.toString.trim
       if (text != "") {
-        TodoItems ! Save( new TodoItem( text ))
+        TodoItem ! Save( new TodoItem( text ))
         findView( TR.newItemText ).setText( "" )
       }
     }
-
-    findView( TR.listItemsView ).onItemClick{ (view, posn, id) =>
-      TodoItems ! Delete( adapter.getItem( posn ))
-    }
   }
+}
+
+trait ViewHolder {
+  def findViewById( id: Int ): View
+  def findView[T]( t: TypedResource[T] ) = findViewById( t.id ).asInstanceOf[T]
 }
