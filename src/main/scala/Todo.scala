@@ -87,7 +87,7 @@ class TodoItemsActivity
     findView( TR.newItemText ).onKey( KeyEvent.KEYCODE_ENTER ){ addItem }
 
     onOptionsItemSelected( R.id.delete_where_done ) { 
-      TodoItem.whereEq( "is_done" -> true ) ! DeleteAll
+      TodoItem.whereEq( "isDone" -> true ) ! DeleteAll
     }
 
     def addItem = {
