@@ -49,7 +49,7 @@ class TodoItemsActivity
     setContentView( R.layout.todo_items )
     useAppFacility( TodoDb )
 
-    val adapter: IndexedSeqSourceAdapter[ TodoItem ] = 
+    val adapter =
       new IndexedSeqSourceAdapter(
         this, TodoItem,
         itemViewResourceId = android.R.layout.simple_list_item_1 )
