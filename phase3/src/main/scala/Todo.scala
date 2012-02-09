@@ -70,7 +70,7 @@ class TodoItemView( context: Context, attrs: AttributeSet = null )
 }
 
 class TodoItemsActivity 
-  extends Activity with PositronicActivityHelpers with ViewHolder
+  extends Activity with PositronicActivityHelpers with TypedViewHolder
 {
   onCreate {
     setContentView( R.layout.todo_items )
@@ -98,9 +98,4 @@ class TodoItemsActivity
       }
     }
   }
-}
-
-trait ViewHolder {
-  def findViewById( id: Int ): View
-  def findView[T]( t: TypedResource[T] ) = findViewById( t.id ).asInstanceOf[T]
 }
