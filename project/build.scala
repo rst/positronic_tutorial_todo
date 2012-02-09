@@ -24,9 +24,11 @@ object General {
 }
 
 object AndroidBuild extends Build {
-  lazy val main = Project (
-    "Positronic Net Tutorial Todo",
-    file("."),
-    settings = General.fullAndroidSettings
-  )
+
+  def sampleProject( name: String ) =
+    Project( name, file( name ), settings = General.fullAndroidSettings )
+
+  lazy val phase1 = sampleProject( "phase1" )
+  lazy val phase2 = sampleProject( "phase2" )
+  lazy val phase3 = sampleProject( "phase3" )
 }
