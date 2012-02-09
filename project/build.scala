@@ -18,7 +18,7 @@ object General {
       keyalias in Android := "change-me",
       libraryDependencies ++= Seq(
         "org.scalatest"     %% "scalatest"        % "1.6.1" % "test",
-        "org.positronicnet" %% "positronicnetlib" % "0.3-SNAPSHOT"
+        "org.positronicnet" %% "positronicnetlib" % "0.4-SNAPSHOT"
       )
     )
 }

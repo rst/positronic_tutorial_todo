@@ -18,6 +18,7 @@ import android.graphics.Paint
 import org.positronicnet.db.Database
 import org.positronicnet.orm.RecordManager
 import org.positronicnet.orm.ManagedRecord
+import org.positronicnet.orm.RecordId
 import org.positronicnet.orm.Actions._
 import org.positronicnet.notifications.Actions._
 
@@ -36,11 +37,11 @@ object TodoDb extends Database( filename = "todos.sqlite3" )
        )
 }
 
-case class TodoItem( description: String = null, 
-                     isDone: Boolean     = false,
-                     id: Long            = ManagedRecord.unsavedId 
+case class TodoItem( description: String             = null, 
+                     isDone:      Boolean            = false,
+                     id:          RecordId[TodoItem] = TodoItem.unsavedId
                    )
-  extends ManagedRecord( TodoItem )
+  extends ManagedRecord
 {
   def setDescription( s: String ) = this.copy( description = s )
   def toggleDone = this.copy( isDone = !isDone )

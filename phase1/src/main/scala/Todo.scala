@@ -16,6 +16,7 @@ import android.widget.TextView
 import org.positronicnet.db.Database
 import org.positronicnet.orm.RecordManager
 import org.positronicnet.orm.ManagedRecord
+import org.positronicnet.orm.RecordId
 import org.positronicnet.orm.Actions._
 import org.positronicnet.notifications.Actions._
 
@@ -32,9 +33,9 @@ object TodoDb extends Database( filename = "todos.sqlite3" )
 }
 
 case class TodoItem( description: String = null, 
-                     id: Long            = ManagedRecord.unsavedId 
+                     id: RecordId[TodoItem] = TodoItems.unsavedId
                    )
-  extends ManagedRecord( TodoItems )
+  extends ManagedRecord
 {
   def setDescription( s: String ) = this.copy( description = s )
   override def toString = this.description
